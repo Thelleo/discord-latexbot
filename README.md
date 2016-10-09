@@ -1,5 +1,6 @@
 # LaTeX Discord Bot
 ![Integral](http://i.imgur.com/34I0cSu.png)
+
 Generate LaTeX images with white background, margin and given DPI.
 
 It has been created for personal usage, so code is not perfect
