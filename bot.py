@@ -9,7 +9,7 @@ from PIL import Image
 client = discord.Client()
 
 # Using 3rdparty site to render TeX is not
-# the best solution, howerer CodeCogs site
+# the best solution, however CodeCogs site
 # is pretty stable and this method does not
 # require installing LaTeX on local machine.
 async def generate_file(dpi, tex):
