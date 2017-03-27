@@ -5,6 +5,7 @@ import urllib.parse
 import random
 import os
 from PIL import Image
+import io
 
 client = discord.Client()
 
@@ -15,18 +16,20 @@ client = discord.Client()
 async def generate_file(dpi, tex):
     MARGIN = 20
     URL = 'https://latex.codecogs.com/gif.latex?{0}'
-    TEMPLATE = '\\dpi{{{0}}} \\bg_white {1}'
-    filename = '{0}.png'.format(random.randint(1, 1000))
+    TEMPLATE = '\\dpi{{{}}} \\bg_white {}'
+    filename = '{}.png'.format(random.randint(1, 1000))
     query = TEMPLATE.format(dpi, tex)
     url = URL.format(urllib.parse.quote(query))
-    urllib.request.urlretrieve(url, filename)
-    img = Image.open(filename)
+    bytes = urllib.request.urlopen(url).read()
+    img = Image.open(io.BytesIO(bytes))
     old_size = img.size
     new_size = (old_size[0] + MARGIN, old_size[1] + MARGIN)
     new_img = Image.new("RGB", new_size, (255, 255, 255))
     new_img.paste(img, (int(MARGIN / 2), int(MARGIN / 2)))
-    new_img.save(filename)
-    return filename
+    img_bytes = io.BytesIO()
+    new_img.save(img_bytes, 'PNG')
+    img_bytes.seek(0)
+    return img_bytes
 
 @client.event
 async def on_ready():
@@ -44,10 +47,10 @@ async def on_message(message):
         else:
             dpi = int(parts[2])
             tex = ';'.join(parts[3:])
-        print('{0}: dpi={1} tex={2}'.format(message.author.name, dpi, tex))
-        name = await generate_file(dpi, tex)
-        await client.send_file(message.channel, name)
-        os.remove(name)
+        print('{}: dpi={} tex={}'.format(message.author.name, dpi, tex))
+        bytes = await generate_file(dpi, tex)
+        filename = '{}.png'.format(random.randint(1, 1000))
+        await client.send_file(message.channel, bytes, filename=filename)
 
 
 client.run(os.environ['TOKEN'])
